@@ -29,22 +29,22 @@ namespace TheatricalPlayersRefactoringKata
             return result;
         }
 
-        private string GetPlayLine(Play play, Performance perf, CultureInfo cultureInfo, int thisAmount)
+        protected virtual string GetPlayLine(Play play, Performance perf, CultureInfo cultureInfo, int thisAmount)
         {
             return string.Format(cultureInfo, "  {0}: {1:C} ({2} seats)\n", play.Name, Convert.ToDecimal(thisAmount / 100), perf.Audience);
         }
 
-        private string GetAmountOwned(CultureInfo cultureInfo, int totalAmount)
+        protected virtual string GetAmountOwned(CultureInfo cultureInfo, int totalAmount)
         {
             return string.Format(cultureInfo, "Amount owed is {0:C}\n", Convert.ToDecimal(totalAmount / 100));
         }
 
-        private string GetEarnedCredits(int volumeCredits)
+        protected virtual string GetEarnedCredits(int volumeCredits)
         {
             return $"You earned {volumeCredits} credits\n";
         }
 
-        private string GetStatement(string customer)
+        protected virtual string GetStatement(string customer)
         {
             return $"Statement for {customer}\n";
         }
