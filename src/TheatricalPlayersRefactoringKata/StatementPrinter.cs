@@ -2,85 +2,81 @@
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace TheatricalPlayersRefactoringKata
+namespace TheatricalPlayersRefactoringKata;
+
+public class StatementPrinter
 {
-    public class StatementPrinter
+    public virtual string Print(Invoice invoice, Dictionary<string, Play> plays)
     {
-        public virtual string Print(Invoice invoice, Dictionary<string, Play> plays)
+        var totalAmount = 0;
+        var volumeCredits = 0;
+        var result = GetStatement(invoice.Customer);
+        var cultureInfo = new CultureInfo("en-US");
+
+        foreach (var perf in invoice.Performances)
         {
-            var totalAmount = 0;
-            var volumeCredits = 0;
-            var result = GetStatement(invoice.Customer);
-            CultureInfo cultureInfo = new CultureInfo("en-US");
+            var play = plays[perf.PlayID];
+            var thisAmount = GetAmount(play, perf);
+            volumeCredits += GetVolumeCredits(perf, play);
 
-            foreach(var perf in invoice.Performances) 
-            {
-                var play = plays[perf.PlayID];
-                var thisAmount = GetAmount(play, perf);
-                volumeCredits += GetVolumeCredits(perf, play);               
-
-                // print line for this order
-                result += GetPlayLine(play, perf, cultureInfo, thisAmount);
-                totalAmount += thisAmount;
-            }
-
-            result += GetAmountOwned(cultureInfo, totalAmount); 
-            result += GetEarnedCredits(volumeCredits);
-            return result;
+            // print line for this order
+            result += GetPlayLine(play, perf, cultureInfo, thisAmount);
+            totalAmount += thisAmount;
         }
 
-        protected virtual string GetPlayLine(Play play, Performance perf, CultureInfo cultureInfo, int thisAmount)
+        result += GetAmountOwned(cultureInfo, totalAmount);
+        result += GetEarnedCredits(volumeCredits);
+        return result;
+    }
+
+    protected virtual string GetPlayLine(Play play, Performance perf, CultureInfo cultureInfo, int thisAmount)
+    {
+        return string.Format(cultureInfo, "  {0}: {1:C} ({2} seats)\n", play.Name, Convert.ToDecimal(thisAmount / 100),
+            perf.Audience);
+    }
+
+    protected virtual string GetAmountOwned(CultureInfo cultureInfo, int totalAmount)
+    {
+        return string.Format(cultureInfo, "Amount owed is {0:C}\n", Convert.ToDecimal(totalAmount / 100));
+    }
+
+    protected virtual string GetEarnedCredits(int volumeCredits)
+    {
+        return $"You earned {volumeCredits} credits\n";
+    }
+
+    protected virtual string GetStatement(string customer)
+    {
+        return $"Statement for {customer}\n";
+    }
+
+    private int GetVolumeCredits(Performance perf, Play play)
+    {
+        // add volume credits
+        var volumeCredits = Math.Max(perf.Audience - 30, 0);
+        // add extra credit for every ten comedy attendees
+        if ("comedy" == play.Type) volumeCredits += (int)Math.Floor((decimal)perf.Audience / 5);
+        return volumeCredits;
+    }
+
+    private static int GetAmount(Play play, Performance perf)
+    {
+        int thisAmount;
+        switch (play.Type)
         {
-            return string.Format(cultureInfo, "  {0}: {1:C} ({2} seats)\n", play.Name, Convert.ToDecimal(thisAmount / 100), perf.Audience);
+            case "tragedy":
+                thisAmount = 40000;
+                if (perf.Audience > 30) thisAmount += 1000 * (perf.Audience - 30);
+                break;
+            case "comedy":
+                thisAmount = 30000;
+                if (perf.Audience > 20) thisAmount += 10000 + 500 * (perf.Audience - 20);
+                thisAmount += 300 * perf.Audience;
+                break;
+            default:
+                throw new Exception("unknown type: " + play.Type);
         }
 
-        protected virtual string GetAmountOwned(CultureInfo cultureInfo, int totalAmount)
-        {
-            return string.Format(cultureInfo, "Amount owed is {0:C}\n", Convert.ToDecimal(totalAmount / 100));
-        }
-
-        protected virtual string GetEarnedCredits(int volumeCredits)
-        {
-            return $"You earned {volumeCredits} credits\n";
-        }
-
-        protected virtual string GetStatement(string customer)
-        {
-            return $"Statement for {customer}\n";
-        }
- 
-        private int GetVolumeCredits(Performance perf, Play play)
-        {
-            // add volume credits
-            var volumeCredits = Math.Max(perf.Audience - 30, 0);
-            // add extra credit for every ten comedy attendees
-            if ("comedy" == play.Type) volumeCredits += (int)Math.Floor((decimal)perf.Audience / 5);
-            return volumeCredits;
-        }
-        
-        private static int GetAmount(Play play, Performance perf)
-        {
-            int thisAmount;
-            switch (play.Type) 
-            {
-                case "tragedy":
-                    thisAmount = 40000;
-                    if (perf.Audience > 30) {
-                        thisAmount += 1000 * (perf.Audience - 30);
-                    }
-                    break;
-                case "comedy":
-                    thisAmount = 30000;
-                    if (perf.Audience > 20) {
-                        thisAmount += 10000 + 500 * (perf.Audience - 20);
-                    }
-                    thisAmount += 300 * perf.Audience;
-                    break;
-                default:
-                    throw new Exception("unknown type: " + play.Type);
-            }
-
-            return thisAmount;
-        }
+        return thisAmount;
     }
 }

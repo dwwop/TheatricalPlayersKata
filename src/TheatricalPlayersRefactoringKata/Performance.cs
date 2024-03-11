@@ -1,18 +1,14 @@
-namespace TheatricalPlayersRefactoringKata
+namespace TheatricalPlayersRefactoringKata;
+
+public class Performance
 {
-    public class Performance
+    public Performance(string playID, int audience)
     {
-        private string _playID;
-        private int _audience;
-
-        public string PlayID { get => _playID; set => _playID = value; }
-        public int Audience { get => _audience; set => _audience = value; }
-
-        public Performance(string playID, int audience)
-        {
-            this._playID = playID;
-            this._audience = audience;
-        }
-
+        PlayID = playID;
+        Audience = audience;
     }
+
+    public string PlayID { get; set; }
+
+    public int Audience { get; set; }
 }
