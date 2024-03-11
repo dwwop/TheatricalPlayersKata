@@ -10,7 +10,7 @@ namespace TheatricalPlayersRefactoringKata
         {
             var totalAmount = 0;
             var volumeCredits = 0;
-            var result = string.Format("Statement for {0}\n", invoice.Customer);
+            var result = GetStatement(invoice.Customer);
             CultureInfo cultureInfo = new CultureInfo("en-US");
 
             foreach(var perf in invoice.Performances) 
@@ -20,14 +20,35 @@ namespace TheatricalPlayersRefactoringKata
                 volumeCredits += GetVolumeCredits(perf, play);               
 
                 // print line for this order
-                result += String.Format(cultureInfo, "  {0}: {1:C} ({2} seats)\n", play.Name, Convert.ToDecimal(thisAmount / 100), perf.Audience);
+                result += GetPlayLine(play, perf, cultureInfo, thisAmount);
                 totalAmount += thisAmount;
             }
-            result += String.Format(cultureInfo, "Amount owed is {0:C}\n", Convert.ToDecimal(totalAmount / 100));
-            result += String.Format("You earned {0} credits\n", volumeCredits);
+
+            result += GetAmountOwned(cultureInfo, totalAmount); 
+            result += GetEarnedCredits(volumeCredits);
             return result;
         }
 
+        private string GetPlayLine(Play play, Performance perf, CultureInfo cultureInfo, int thisAmount)
+        {
+            return string.Format(cultureInfo, "  {0}: {1:C} ({2} seats)\n", play.Name, Convert.ToDecimal(thisAmount / 100), perf.Audience);
+        }
+
+        private string GetAmountOwned(CultureInfo cultureInfo, int totalAmount)
+        {
+            return string.Format(cultureInfo, "Amount owed is {0:C}\n", Convert.ToDecimal(totalAmount / 100));
+        }
+
+        private string GetEarnedCredits(int volumeCredits)
+        {
+            return $"You earned {volumeCredits} credits\n";
+        }
+
+        private string GetStatement(string customer)
+        {
+            return $"Statement for {customer}\n";
+        }
+ 
         private int GetVolumeCredits(Performance perf, Play play)
         {
             // add volume credits
