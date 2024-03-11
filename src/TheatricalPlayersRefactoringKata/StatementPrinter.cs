@@ -60,7 +60,7 @@ namespace TheatricalPlayersRefactoringKata
         
         private static int GetAmount(Play play, Performance perf)
         {
-            var thisAmount = 0;
+            int thisAmount;
             switch (play.Type) 
             {
                 case "tragedy":
